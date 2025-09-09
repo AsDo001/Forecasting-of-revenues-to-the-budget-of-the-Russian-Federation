@@ -51,7 +51,7 @@
 ## Установка 🚀
 1. Клонируйте репозиторий:  
 ```
-git clone https://github.com/yourusername/rf-budget-oracle.git
+git clone https://
 ```
 2. Установите зависимости (Python 3.8+):  
 ```
