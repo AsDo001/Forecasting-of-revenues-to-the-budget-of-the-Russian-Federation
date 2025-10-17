@@ -51,11 +51,12 @@
 ## Установка 🚀
 1. Клонируйте репозиторий:  
 ```
-git clone https://
+git clone https://Forecasting-of-revenues-to-the-budget-of-the-Russian-Federation
+
 ```
 2. Установите зависимости (Python 3.8+):  
 ```
-pip install -r requirements.txt
+pip install pandas numpy sklearn seaborn matplotlib -r requirements.txt
 ```
 3. Скачайте данные: 
 ```
