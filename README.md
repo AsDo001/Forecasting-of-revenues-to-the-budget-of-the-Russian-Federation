@@ -297,7 +297,7 @@ unzip russian-economy-90s-chaos-2020s-oil.zip -d data/raw/
 
 
 - 🐱 **GitHub**: [@AsDo001](https://github.com/AsDo001)
-- 📊 **Kaggle**: [kaggle.com/yourprofile](https://www.kaggle.com/arsseniidonskov)
+- 📊 **Kaggle**: [AsD0001](https://www.kaggle.com/arsseniidonskov)
 
 ---
 
