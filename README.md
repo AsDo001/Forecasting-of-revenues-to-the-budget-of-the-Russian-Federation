@@ -234,11 +234,11 @@ unzip russian-economy-90s-chaos-2020s-oil.zip -d data/raw/
 - [x] Сбор и подготовка данных
 - [x] Exploratory Data Analysis (EDA)
 - [x] Анализ целевой переменной и признаков
+- [x] Feature Engineering (обработка пропусков, нормализация, создание лагов)
+- [x] Обучение baseline моделей (Linear Regression, Decision Tree)
+- [x] Обучение advanced моделей (Random Forest, XGBoost, LightGBM)  
 
 ### 🚧 В работе
-- [ ] Feature Engineering (обработка пропусков, нормализация, создание лагов)
-- [ ] Обучение baseline моделей (Linear Regression, Decision Tree)
-- [ ] Обучение advanced моделей (Random Forest, XGBoost, LightGBM)
 - [ ] Hyperparameter Tuning с Optuna
 - [ ] Ансамблирование моделей (Stacking, Voting)
 - [ ] Кросс-валидация и оценка качества
