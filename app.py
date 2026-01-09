@@ -30,15 +30,11 @@ def run_prediction(input_file, model_type="lin_reg"):
         return
 
     try:
-        # 1. Загрузка новых данных
         df = pd.read_csv(input_file)
         print(f"Загружен файл: {input_file}")
         
-        # 2. Предобработка
         processed_df = preprocess_data(df.copy())
         
-        # 3. Подготовка признаков (X)
-        # Убираем Year и целевую переменную, если они есть
         X = processed_df.copy()
         if 'Year' in X.columns:
             X = X.drop('Year', axis=1)
@@ -47,11 +43,9 @@ def run_prediction(input_file, model_type="lin_reg"):
         if target in X.columns:
             X = X.drop(target, axis=1)
             
-        # 4. Предсказание
         X_scaled = scaler.transform(X)
         predictions = model.predict(X_scaled)
         
-        # 5. Вывод результата
         result_df = df.copy()
         result_df['predicted_tax_receipts'] = predictions
         
