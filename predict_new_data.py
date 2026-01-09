@@ -1,82 +1,73 @@
 import pandas as pd
 import os
 import glob
+import joblib
 from src.data_preprocessing import preprocess_data
 from src.feature_engineering import create_features
-from src.inference import load_model_and_scaler, predict
+from src.inference import predict
 
-def run_prediction(input_folder, output_folder, model_type="randomforestregressor"):
+def run_prediction(input_file, model_type="lin_reg"):
     """
-    Загружает предобученную модель и делает предсказания для всех CSV файлов в папке.
+    Загружает предобученную модель и делает предсказания для конкретного файла.
     """
-    # Пути к моделям (согласно структуре вашего репозитория)
-    model_path = f"src/models/{model_type}_model.joblib"
-    scaler_path = "src/models/scaler.joblib"
+    # Пути к моделям внутри папки src/models
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(base_path, "src", "models", f"{model_type}.joblib")
+    scaler_path = os.path.join(base_path, "src", "models", "lin_reg_scaler.joblib")
     
-    print(f"--- Запуск процесса предсказания (Модель: {model_type}) ---")
+    print(f"--- Запуск предсказания (Модель: {model_type}) ---")
     
+    if not os.path.exists(model_path) or not os.path.exists(scaler_path):
+        print(f"Ошибка: Файлы модели или скейлера не найдены в src/models/")
+        return
+
     try:
-        model, scaler = load_model_and_scaler(model_path, scaler_path)
+        model = joblib.load(model_path)
+        scaler = joblib.load(scaler_path)
         print("Модель и скейлер успешно загружены.")
     except Exception as e:
-        print(f"Ошибка загрузки: {e}")
+        print(f"Ошибка загрузки joblib файлов: {e}")
         return
 
-    # Создаем папку для результатов, если её нет
-    os.makedirs(output_folder, exist_ok=True)
-
-    # Ищем все CSV файлы в папке
-    csv_files = glob.glob(os.path.join(input_folder, "*.csv"))
-    
-    if not csv_files:
-        print(f"В папке {input_folder} не найдено CSV файлов.")
-        return
-
-    for file_path in csv_files:
-        file_name = os.path.basename(file_path)
-        print(f"Обработка файла: {file_name}...")
+    try:
+        # 1. Загрузка новых данных
+        df = pd.read_csv(input_file)
+        print(f"Загружен файл: {input_file}")
         
-        try:
-            # 1. Загрузка
-            df = pd.read_csv(file_path)
+        # 2. Предобработка
+        processed_df = preprocess_data(df.copy())
+        
+        # 3. Подготовка признаков (X)
+        # Убираем Year и целевую переменную, если они есть
+        X = processed_df.copy()
+        if 'Year' in X.columns:
+            X = X.drop('Year', axis=1)
+        
+        target = "tax_receipts(billion USD)"
+        if target in X.columns:
+            X = X.drop(target, axis=1)
             
-            # 2. Предобработка (используем ту же логику, что при обучении)
-            processed_df = preprocess_data(df.copy())
-            
-            # 3. Выделение признаков
-            # Если в новых данных нет целевой переменной, create_features может выдать ошибку.
-            # Поэтому адаптируем:
-            if 'Year' in processed_df.columns:
-                X = processed_df.drop("Year", axis=1)
-            else:
-                X = processed_df.copy()
-            
-            # Удаляем целевую переменную, если она есть (для оценки)
-            target = "tax_receipts(billion USD)"
-            if target in X.columns:
-                X = X.drop(target, axis=1)
-            
-            # 4. Предсказание
-            predictions = predict(model, scaler, X)
-            
-            # 5. Сохранение результата
-            result_df = df.copy()
-            result_df['predicted_tax_receipts'] = predictions
-            
-            output_path = os.path.join(output_folder, f"predicted_{file_name}")
-            result_df.to_csv(output_path, index=False)
-            print(f"Результат сохранен в: {output_path}")
-            
-        except Exception as e:
-            print(f"Ошибка при обработке {file_name}: {e}")
-
-    print("--- Процесс предсказания завершен ---")
+        # 4. Предсказание
+        X_scaled = scaler.transform(X)
+        predictions = model.predict(X_scaled)
+        
+        # 5. Вывод результата
+        result_df = df.copy()
+        result_df['predicted_tax_receipts'] = predictions
+        
+        output_path = input_file.replace(".csv", "_predicted.csv")
+        result_df.to_csv(output_path, index=False)
+        print(f"✅ Предсказания успешно сохранены в: {output_path}")
+        print("\nПервые 5 строк результата:")
+        print(result_df[['Year', 'predicted_tax_receipts']].head() if 'Year' in result_df.columns else result_df['predicted_tax_receipts'].head())
+        
+    except Exception as e:
+        print(f"Ошибка при выполнении предсказания: {e}")
 
 if __name__ == "__main__":
-    # Пример: берем данные из папки 'data/new_data' и сохраняем в 'data/predictions'
-    # Вы можете изменить эти пути под свои нужды
-    run_prediction(
-        input_folder="data", 
-        output_folder="data/predictions",
-        model_type="randomforestregressor" # или "xgbregressor", "linearregression"
-    )
+    # По умолчанию предсказываем для dataset.csv в папке data
+    data_to_predict = "data/test.csv"
+    if os.path.exists(data_to_predict):
+        run_prediction(data_to_predict)
+    else:
+        print(f"Файл {data_to_predict} не найден. Проверьте путь.")
