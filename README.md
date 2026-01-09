@@ -137,9 +137,9 @@
 Forecasting-of-revenues-to-the-budget-of-the-Russian-Federation/
 │
 ├── data/
-│   ├── raw/                          # Исходные данные
-│   ├── processed/                    # Обработанные данные
-│   └── README.md                     # Описание данных
+│   ├── dataset.csv/                  # Исходные данные
+│   ├── proc_dataset.csv/             # Обработанные данные
+│   └── ФНС.xlsx                      # Exel файл с описанием
 │
 ├── notebooks/
 │   ├── 01_EDA.ipynb                 # Exploratory Data Analysis
@@ -151,8 +151,8 @@ Forecasting-of-revenues-to-the-budget-of-the-Russian-Federation/
 │   ├── data_preprocessing.py        # Препроцессинг данных
 │   ├── feature_engineering.py       # Feature engineering
 │   ├── models.py                    # Модели ML
-│   ├── evaluation.py                # Метрики и оценка
-│   └── utils.py                     # Вспомогательные функции
+│   ├── inference.py                # Метрики и оценка
+│   └── model_training.py           # Тренировка моделей
 │
 ├── models/                          # Сохранённые модели
 │   └── README.md                    # Описание моделей
