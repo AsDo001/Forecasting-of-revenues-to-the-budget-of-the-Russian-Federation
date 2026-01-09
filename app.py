@@ -57,15 +57,14 @@ def run_prediction(input_file, model_type="lin_reg"):
         
         output_path = input_file.replace(".csv", "_predicted.csv")
         result_df.to_csv(output_path, index=False)
-        print(f"✅ Предсказания успешно сохранены в: {output_path}")
+        print(f"---Предсказания успешно сохранены в: {output_path}")
         print("\nПервые 5 строк результата:")
-        print(result_df[['Year', 'predicted_tax_receipts']].head() if 'Year' in result_df.columns else result_df['predicted_tax_receipts'].head())
+        print(result_df[['predicted_tax_receipts']].head() if 'Year' in result_df.columns else result_df['predicted_tax_receipts'].head())
         
     except Exception as e:
         print(f"Ошибка при выполнении предсказания: {e}")
 
 if __name__ == "__main__":
-    # По умолчанию предсказываем для dataset.csv в папке data
     data_to_predict = "data/test.csv"
     if os.path.exists(data_to_predict):
         run_prediction(data_to_predict)
