@@ -7,7 +7,7 @@ def create_features(df):
     if df is None:
         return None, None
         
-    # Удаляем Year, так как это не признак для регрессии в данном контексте
+
     if 'Year' in df.columns:
         df = df.drop("Year", axis=1)
         

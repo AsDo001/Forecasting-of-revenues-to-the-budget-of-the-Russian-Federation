@@ -16,7 +16,7 @@ def load_model_and_scaler(model_path, scaler_path):
 
 def predict(model, scaler, X):
     """Выполняет предсказание на новых данных."""
-    # Убеждаемся, что X - это DataFrame или массив нужной формы
+
     X_scaled = scaler.transform(X)
     return model.predict(X_scaled)
 

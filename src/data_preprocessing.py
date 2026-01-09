@@ -15,14 +15,13 @@ def preprocess_data(df):
     if df is None:
         return None
         
-    # Удаление дубликатов
+    
     df = df.drop_duplicates()
 
-    # Обработка пропусков: заполнение медианой для числовых столбцов
+    
     numeric_cols = df.select_dtypes(include=[np.number]).columns
     df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].median())
 
-    # Обработка специфической колонки tax_rates(PIT%)
     if 'tax_rates(PIT%)' in df.columns:
         df['tax_rates(PIT%)'] = df['tax_rates(PIT%)'].astype(str).str.replace('–', '-')
         def parse_pit(value):
@@ -32,10 +31,10 @@ def preprocess_data(df):
                     return (float(parts[0]) + float(parts[1])) / 2
                 return float(value)
             except:
-                return 13.0 # Значение по умолчанию
+                return 13.0 
         df['tax_rates(PIT%)'] = df['tax_rates(PIT%)'].apply(parse_pit)
 
-    # Клиппинг значений (ограничение выбросов)
+
     bounds = {
         "oil_prices(barrel/USD)": (10.0, 150.0),
         "gas_prices(MMBtu/USD)": (1.0, 15.0),
@@ -50,7 +49,6 @@ def preprocess_data(df):
         if col in df.columns:
             df[col] = df[col].clip(lower=low, upper=high)
 
-    # Округление значимых показателей
     round_cols = ["oil_prices(barrel/USD)", "gas_prices(MMBtu/USD)", "Key_rate(%)", "inflation_rate(%)", "exchange_rates(RUB/USD)"]
     for col in round_cols:
         if col in df.columns:
