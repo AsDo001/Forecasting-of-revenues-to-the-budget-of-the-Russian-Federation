@@ -247,7 +247,7 @@ unzip russian-economy-90s-chaos-2020s-oil.zip -d data/raw/
 - [ ] Анализ Feature Importance
 - [ ] Временные ряды (ARIMA, SARIMA, Prophet)
 - [ ] Deep Learning (LSTM, Transformer)
-- [ ] Web-приложение для прогнозирования (Streamlit/FastAPI)
+- [ ] Web-приложение для прогнозирования (Streamlit)
 - [ ] Автоматизация парсинга данных (Росстат API)
 - [ ] Dockerизация проекта
 - [ ] CI/CD pipeline
