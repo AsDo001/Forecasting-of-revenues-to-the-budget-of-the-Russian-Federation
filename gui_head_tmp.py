@@ -8,7 +8,6 @@ import warnings
 import os
 import json
 from pathlib import Path
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 warnings.filterwarnings('ignore')
 
 # ====================================================================================================
@@ -46,113 +45,9 @@ MODEL_CONFIG = {
     }
 }
 
-FEATURE_COLUMNS = [
-    'oil_prices(barrel/USD)',
-    'gas_prices(MMBtu/USD)',
-    'Oil_production_volume(million_b/y)',
-    'Gas_production_volume(billion_c_m/y)',
-    'Oil_export_volume(million tons)',
-    'Gas_export_volume(billion_c_m)',
-    'Share_of_oil_and_gas_revenues(%)',
-    'TB(billion USD)',
-    'FDI(billion USD)',
-    'Import_volume(billion USD)',
-    'Key_rate(%)',
-    'level_of_public_debt(% of GDP)',
-    'tock_Market_Index(MOEX Index)',
-    'inflation_rate(%)',
-    'exchange_rates(RUB/USD)',
-    'GNP(milliard USD)',
-    'ISI(0-10)',
-    'Migration_rate(net_migration th/p)',
-    'Gini_coefficient(%)',
-    'population_size(p)',
-    'unemployment_rate(%)',
-    'per_c_i(thousands/USD)',
-    'Non_oil_GDP(%)',
-    'CPI',
-    'Military_expenditures(% of GDP)',
-    'tax_rates(VAT%)',
-    'series_id',
-    'PIT_min',
-    'PIT_max'
-]
-TARGET_COLUMN = 'tax_receipts(billion USD)'
-
 # ====================================================================================================
 # ФУНКЦИИ ЗАГРУЗКИ МОДЕЛЕЙ
 # ====================================================================================================
-
-@st.cache_data
-def load_evaluation_dataset():
-    """Загружает датасет для расчета метрик моделей."""
-    dataset_path = Path('data_main/proc_dataset.csv')
-    if not dataset_path.exists():
-        return None, None
-
-    try:
-        df = pd.read_csv(dataset_path)
-    except Exception:
-        return None, None
-
-    required_columns = FEATURE_COLUMNS + [TARGET_COLUMN]
-    if any(col not in df.columns for col in required_columns):
-        return None, None
-
-    eval_df = df[required_columns].dropna()
-    if eval_df.empty:
-        return None, None
-
-    return eval_df[FEATURE_COLUMNS], eval_df[TARGET_COLUMN]
-
-
-def calculate_model_metrics(model, model_name, x_eval, y_eval, scalers):
-    """Считает R², MAE, RMSE и MAPE для выбранной модели."""
-    try:
-        if MODEL_CONFIG[model_name]['scaler_needed'] and model_name in scalers:
-            x_input = scalers[model_name].transform(x_eval)
-        else:
-            x_input = x_eval
-
-        y_pred = model.predict(x_input)
-        mae = mean_absolute_error(y_eval, y_pred)
-        rmse = np.sqrt(mean_squared_error(y_eval, y_pred))
-        r2 = r2_score(y_eval, y_pred)
-
-        non_zero_mask = y_eval != 0
-        mape = None
-        if np.any(non_zero_mask):
-            y_non_zero = y_eval[non_zero_mask]
-            pred_non_zero = y_pred[non_zero_mask]
-            mape = float(np.mean(np.abs((y_non_zero - pred_non_zero) / y_non_zero)) * 100)
-
-        return {
-            'r2': float(r2),
-            'mae': float(mae),
-            'rmse': float(rmse),
-            'mape': mape
-        }
-    except Exception:
-        return None
-
-
-def ensure_metrics_available(models, scalers, metrics):
-    """Досчитывает метрики, если json-файлы метрик отсутствуют."""
-    x_eval, y_eval = load_evaluation_dataset()
-    if x_eval is None or y_eval is None:
-        return metrics
-
-    for model_name, model in models.items():
-        has_metrics = model_name in metrics and {'r2', 'mae', 'rmse'}.issubset(metrics[model_name])
-        if has_metrics:
-            continue
-
-        calculated = calculate_model_metrics(model, model_name, x_eval, y_eval, scalers)
-        if calculated is not None:
-            metrics[model_name] = calculated
-
-    return metrics
-
 
 @st.cache_resource
 def load_models_system():
@@ -192,7 +87,6 @@ def load_models_system():
             except Exception as e:
                 st.sidebar.error(f"Ошибка загрузки {model_name}: {str(e)}")
 
-    metrics = ensure_metrics_available(models, scalers, metrics)
     return models, scalers, metrics, available_models
 
 
@@ -578,22 +472,6 @@ if page == "🎯 Прогнозирование":
                         else:
                             status = "🔴 Низкий"
                         st.metric("Уровень", status)
-
-                    st.markdown("### 📏 Метрики выбранной модели")
-                    if selected_model in metrics:
-                        current_metrics = metrics[selected_model]
-                        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-                        with m_col1:
-                            st.metric("R²", f"{current_metrics.get('r2', 0):.3f}")
-                        with m_col2:
-                            st.metric("MAE", f"{current_metrics.get('mae', 0):.2f}")
-                        with m_col3:
-                            st.metric("RMSE", f"{current_metrics.get('rmse', 0):.2f}")
-                        with m_col4:
-                            mape_value = current_metrics.get('mape')
-                            st.metric("MAPE", f"{mape_value:.2f}%" if mape_value is not None else "—")
-                    else:
-                        st.info("Метрики для выбранной модели пока недоступны.")
 
                     # График
                     st.markdown("### 📊 Сравнение с историей")
