@@ -247,7 +247,7 @@ unzip russian-economy-90s-chaos-2020s-oil.zip -d data/raw/
 - [ ] Анализ Feature Importance
 - [ ] Временные ряды (ARIMA, SARIMA, Prophet)
 - [ ] Deep Learning (LSTM, Transformer)
-- [ ] Web-приложение для прогнозирования (Streamlit/FastAPI)
+- [ ] Web-приложение для прогнозирования (Streamlit)
 - [ ] Автоматизация парсинга данных (Росстат API)
 - [ ] Dockerизация проекта
 - [ ] CI/CD pipeline
@@ -265,13 +265,6 @@ unzip russian-economy-90s-chaos-2020s-oil.zip -d data/raw/
 ## 🤝 Вклад в проект
 
 Буду рад вашим предложениям и улучшениям! 🚀
-
-### Как внести вклад:
-1. **Fork** репозиторий
-2. Создайте **feature branch** (`git checkout -b feature/AmazingFeature`)
-3. **Commit** изменения (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** в branch (`git push origin feature/AmazingFeature`)
-5. Откройте **Pull Request**
 
 ### Идеи для развития:
 - 💡 Новые признаки (добавление данных о санкциях, нефтяных квотах OPEC+)

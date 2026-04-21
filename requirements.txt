@@ -1,1 +1,1 @@
-Pandas numpy Scikit-learn XGBoost LightGBM Matplotlib Seaborn Plotly SHAP optuna 
+Pandas numpy Scikit-learn XGBoost LightGBM Matplotlib Seaborn Plotly SHAP optuna streamlit joblib
