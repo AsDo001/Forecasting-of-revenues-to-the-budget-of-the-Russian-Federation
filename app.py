@@ -53,7 +53,7 @@ def run_prediction(input_file, model_type="lin_reg"):
         result_df.to_csv(output_path, index=False)
         print(f"--- Предсказания успешно сохранены в: {output_path}")
         print("Первые строки результата:")
-        print(result_df[['predicted_tax_receipts']].head() if 'Year' in result_df.columns else result_df['predicted_tax_receipts'].head())
+        print("Предсказанные поступления:", result_df[['predicted_tax_receipts']].head() if 'Year' in result_df.columns else result_df['predicted_tax_receipts'].head())
         
     except Exception as e:
         print(f"Ошибка при выполнении предсказания: {e}")
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         input_files = [f for f in all_csv_files if not f.endswith("_predicted.csv")]
         
         if len(input_files) == 0:
-            print(f"В папке {data_dir} не найдено новых исходных CSV-файлов для прогноза.")
+            print(f"В папке {data_dir} {os.linesep}Не найдено новых исходных CSV-файлов для прогноза.")
         else:
             print(f"Найдено файлов для обработки: {len(input_files)}")
             # Пробегаемся циклом по каждому найденному файлу
