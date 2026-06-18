@@ -1,1 +1,3 @@
 Pandas numpy Scikit-learn XGBoost LightGBM Matplotlib Seaborn Plotly SHAP optuna streamlit joblib
+joblib
+pandas

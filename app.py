@@ -15,7 +15,7 @@ def run_prediction(input_file, model_type="lin_reg"):
     model_path = os.path.join(base_path, "src", "models", f"{model_type}.joblib")
     scaler_path = os.path.join(base_path, "src", "models", "lin_reg_scaler.joblib")
     
-    print(f"--- Запуск предсказания (Модель: {model_type}) ---")
+    print(f"\n--- Запуск предсказания для файла: {os.path.basename(input_file)} (Модель: {model_type}) ---")
     
     if not os.path.exists(model_path) or not os.path.exists(scaler_path):
         print(f"Ошибка: Файлы модели или скейлера не найдены в src/models/")
@@ -51,16 +51,31 @@ def run_prediction(input_file, model_type="lin_reg"):
         
         output_path = input_file.replace(".csv", "_predicted.csv")
         result_df.to_csv(output_path, index=False)
-        print(f"---Предсказания успешно сохранены в: {output_path}")
-        print("\nПервые 5 строк результата:")
+        print(f"--- Предсказания успешно сохранены в: {output_path}")
+        print("Первые строки результата:")
         print(result_df[['predicted_tax_receipts']].head() if 'Year' in result_df.columns else result_df['predicted_tax_receipts'].head())
         
     except Exception as e:
         print(f"Ошибка при выполнении предсказания: {e}")
 
 if __name__ == "__main__":
-    data_to_predict = "data/test.csv"
-    if os.path.exists(data_to_predict):
-        run_prediction(data_to_predict)
+    # Определяем путь к папке data относительно текущего скрипта
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(base_path, "data")
+    
+    if os.path.exists(data_dir):
+        search_pattern = os.path.join(data_dir, "*.csv")
+        all_csv_files = glob.glob(search_pattern)
+        
+        # Отфильтровываем файлы результатов (чтобы скрипт не делал предсказания на предсказания)
+        input_files = [f for f in all_csv_files if not f.endswith("_predicted.csv")]
+        
+        if len(input_files) == 0:
+            print(f"В папке {data_dir} не найдено новых исходных CSV-файлов для прогноза.")
+        else:
+            print(f"Найдено файлов для обработки: {len(input_files)}")
+            # Пробегаемся циклом по каждому найденному файлу
+            for file_path in input_files:
+                run_prediction(file_path)
     else:
-        print(f"Файл {data_to_predict} не найден. Проверьте путь.")
+        print(f"Папка {data_dir} не найдена. Проверьте структуру проекта.")
