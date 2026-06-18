@@ -2,29 +2,32 @@ import pandas as pd
 import os
 import glob
 import joblib
+import sys
 from src.data_preprocessing import preprocess_data
 from src.feature_engineering import create_features
 from src.inference import predict
 
 def run_prediction(input_file, model_type="lin_reg"):
-    """
-    Загружает предобученную модель и делает предсказания для конкретного файла.
-    """
-    # Пути к моделям внутри папки src/models
     base_path = os.path.dirname(os.path.abspath(__file__))
     model_path = os.path.join(base_path, "src", "models", f"{model_type}.joblib")
-    scaler_path = os.path.join(base_path, "src", "models", "lin_reg_scaler.joblib")
+    scaler_path = os.path.join(base_path, "src", "models", f"{model_type}_scaler.joblib")
     
     print(f"\n--- Запуск предсказания для файла: {os.path.basename(input_file)} (Модель: {model_type}) ---")
     
-    if not os.path.exists(model_path) or not os.path.exists(scaler_path):
-        print(f"Ошибка: Файлы модели или скейлера не найдены в src/models/")
+    if not os.path.exists(model_path):
+        print(f"Ошибка: Файл модели {model_type}.joblib не найден in src/models/")
         return
 
     try:
         model = joblib.load(model_path)
-        scaler = joblib.load(scaler_path)
-        print("Модель и скейлер успешно загружены.")
+        
+        if os.path.exists(scaler_path):
+            scaler = joblib.load(scaler_path)
+            print("Модель и скейлер успешно загружены.")
+        else:
+            scaler = None
+            print("Модель успешно загружена (работаем без скейлера).")
+            
     except Exception as e:
         print(f"Ошибка загрузки joblib файлов: {e}")
         return
@@ -43,23 +46,28 @@ def run_prediction(input_file, model_type="lin_reg"):
         if target in X.columns:
             X = X.drop(target, axis=1)
             
-        X_scaled = scaler.transform(X)
-        predictions = model.predict(X_scaled)
+        if scaler is not None:
+            X_processed = scaler.transform(X)
+        else:
+            X_processed = X
+            
+        predictions = model.predict(X_processed)
         
         result_df = df.copy()
         result_df['predicted_tax_receipts'] = predictions
         
-        output_path = input_file.replace(".csv", "_predicted.csv")
+        output_path = input_file.replace(".csv", f"_{model_type}_predicted.csv")
         result_df.to_csv(output_path, index=False)
+        
         print(f"--- Предсказания успешно сохранены в: {output_path}")
         print("Первые строки результата:")
-        print("Предсказанные поступления:", result_df[['predicted_tax_receipts']].head() if 'Year' in result_df.columns else result_df['predicted_tax_receipts'].head())
+        print("Предсказанные поступления:")
+        print(result_df['predicted_tax_receipts'].head())
         
     except Exception as e:
         print(f"Ошибка при выполнении предсказания: {e}")
 
 if __name__ == "__main__":
-    # Определяем путь к папке data относительно текущего скрипта
     base_path = os.path.dirname(os.path.abspath(__file__))
     data_dir = os.path.join(base_path, "data")
     
@@ -67,15 +75,25 @@ if __name__ == "__main__":
         search_pattern = os.path.join(data_dir, "*.csv")
         all_csv_files = glob.glob(search_pattern)
         
-        # Отфильтровываем файлы результатов (чтобы скрипт не делал предсказания на предсказания)
         input_files = [f for f in all_csv_files if not f.endswith("_predicted.csv")]
         
         if len(input_files) == 0:
             print(f"В папке {data_dir} {os.linesep}Не найдено новых исходных CSV-файлов для прогноза.")
         else:
             print(f"Найдено файлов для обработки: {len(input_files)}")
-            # Пробегаемся циклом по каждому найденному файлу
-            for file_path in input_files:
-                run_prediction(file_path)
+            
+            if len(sys.argv) > 1:
+                chosen_model = sys.argv[1]
+            else:
+                chosen_model = "lin_reg"
+            
+            allowed_models = ["lin_reg", "rf_reg", "lgbm", "xgb"]
+            
+            if chosen_model not in allowed_models:
+                print(f"Ошибка: Модель '{chosen_model}' не поддерживается скриптом.")
+                print(f"Допустимые варианты для ввода: {', '.join(allowed_models)}")
+            else:
+                for file_path in input_files:
+                    run_prediction(file_path, model_type=chosen_model)
     else:
         print(f"Папка {data_dir} не найдена. Проверьте структуру проекта.")
